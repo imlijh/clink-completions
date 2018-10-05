@@ -14,11 +14,19 @@ end
 
 -- read all Host entries in the user's ssh config file
 local function list_ssh_hosts()
-    return read_lines(clink.get_env("userprofile") .. "/.ssh/config")
+    -- note: there could be hosts like "Host nameA nameB nameC"
+    local hosts = w({})
+    for _, token in pairs(read_lines(clink.get_env("userprofile") .. "/.ssh/config")
         :map(function (line)
             return line:match('^Host%s+(.*)$')
         end)
         :filter()
+        ) do
+        for host in string.gmatch(token, "%S+") do
+            table.insert(hosts, host)
+        end
+    end
+    return hosts
 end
 
 local function list_known_hosts()
